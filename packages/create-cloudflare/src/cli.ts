@@ -1,4 +1,5 @@
-import { existsSync } from "node:fs";
+#!/usr/bin/env node
+import { existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { crash, logRaw, startSection } from "@cloudflare/cli";
 import { blue, dim } from "@cloudflare/cli/colors";
@@ -84,8 +85,9 @@ export const runCli = async (args: Partial<C3Args>) => {
 		format: (val) => `./${val}`,
 	});
 
+	// If the directory already exists, confirm overwrite or abort
 	const path = resolve(projectName);
-	if (existsSync(path)) {
+	if (existsSync(path) && readdirSync(path).length !== 0) {
 		const overwrite = await processArgument(args, "overwrite", {
 			type: "confirm",
 			question:

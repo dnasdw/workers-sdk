@@ -1,4 +1,4 @@
-import { mkdirSync } from "fs";
+import { mkdirSync, rmSync } from "fs";
 import { basename, dirname, relative, resolve } from "path";
 import { chdir } from "process";
 import {
@@ -66,10 +66,14 @@ export const setupProjectDirectory = (args: C3Args) => {
 		crash(err);
 	}
 
+	// Delete the target directory path. At this point, the
+	// user has already confirmed the overwrite, if it exists
+	rmSync(path, { recursive: true, force: true });
+
 	const directory = dirname(path);
 	const pathBasename = basename(path);
 
-	// If the target is a nested directory, create the parent
+	// In the case of a nested target directory, create any required parents
 	mkdirSync(directory, { recursive: true });
 
 	// Change to the parent directory

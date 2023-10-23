@@ -42,7 +42,7 @@ export const parseArgs = async (argv: string[]): Promise<Partial<C3Args>> => {
 		})
 		.option("overwrite", {
 			type: "boolean",
-			description: "Overwrite files if target directory exists.",
+			description: "Overwrite files if target directory exists",
 		})
 		.option("auto-update", {
 			type: "boolean",
