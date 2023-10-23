@@ -40,6 +40,10 @@ export const parseArgs = async (argv: string[]): Promise<Partial<C3Args>> => {
 			alias: "y",
 			type: "boolean",
 		})
+		.option("overwrite", {
+			type: "boolean",
+			description: "Overwrite files if target directory exists.",
+		})
 		.option("auto-update", {
 			type: "boolean",
 			default: C3_DEFAULTS.autoUpdate,

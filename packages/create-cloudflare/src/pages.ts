@@ -38,6 +38,7 @@ const defaultFrameworkConfig = {
 
 export const runPagesGenerator = async (args: C3Args) => {
 	const originalCWD = process.cwd();
+
 	const { name, path } = setupProjectDirectory(args);
 	const framework = await getFrameworkSelection(args);
 

@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readdirSync } from "fs";
+import { mkdirSync } from "fs";
 import { basename, dirname, relative, resolve } from "path";
 import { chdir } from "process";
 import {
@@ -36,72 +36,30 @@ export const validateProjectDirectory = (
 	relativePath: string,
 	args: Partial<C3Args>
 ) => {
-	// Validate that the directory is non-existent or empty
-	const path = resolve(relativePath);
-	const existsAlready = existsSync(path);
-
-	if (existsAlready) {
-		for (const file of readdirSync(path)) {
-			if (!isAllowedExistingFile(file)) {
-				return `Directory \`${relativePath}\` already exists and contains files that might conflict. Please choose a new name.`;
-			}
-		}
-	}
-
-	// Ensure the name is valid per the pages schema
 	// Skip this if we're initializing from an existing workers script, since some
 	// previously created workers may have names containing capital letters
-	if (!args.existingScript) {
-		const projectName = basename(path);
-		const invalidChars = /[^a-z0-9-]/;
-		const invalidStartEnd = /^-|-$/;
+	if (args.existingScript) return;
 
-		if (projectName.match(invalidStartEnd)) {
-			return `Project names cannot start or end with a dash.`;
-		}
+	// Ensure the name is valid per the pages schema
+	const path = resolve(relativePath);
+	const projectName = basename(path);
+	const invalidChars = /[^a-z0-9-]/;
+	const invalidStartEnd = /^-|-$/;
 
-		if (projectName.match(invalidChars)) {
-			return `Project names must only contain lowercase characters, numbers, and dashes.`;
-		}
-
-		if (projectName.length > 58) {
-			return `Project names must be less than 58 characters.`;
-		}
+	if (projectName.match(invalidStartEnd)) {
+		return `Project names cannot start or end with a dash.`;
 	}
-};
 
-export const isAllowedExistingFile = (file: string) => {
-	// C3 shouldn't prevent a user from using an existing directory if it
-	// only contains benign config and/or other files from the following set
-	const allowedExistingFiles = new Set([
-		".DS_Store",
-		".git",
-		".gitattributes",
-		".gitignore",
-		".gitlab-ci.yml",
-		".hg",
-		".hgcheck",
-		".hgignore",
-		".idea",
-		".npmignore",
-		".travis.yml",
-		"LICENSE",
-		"Thumbs.db",
-		"docs",
-		"mkdocs.yml",
-		"npm-debug.log",
-		"yarn-debug.log",
-		"yarn-error.log",
-		"yarnrc.yml",
-		".yarn",
-		".gitkeep",
-	]);
+	if (projectName.match(invalidChars)) {
+		return `Project names must only contain lowercase characters, numbers, and dashes.`;
+	}
 
-	return allowedExistingFiles.has(file);
+	if (projectName.length > 58) {
+		return `Project names must be less than 58 characters.`;
+	}
 };
 
 export const setupProjectDirectory = (args: C3Args) => {
-	// Crash if the directory already exists
 	const path = resolve(args.projectName);
 	const err = validateProjectDirectory(path, args);
 	if (err) {

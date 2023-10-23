@@ -1,4 +1,5 @@
-#!/usr/bin/env node
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { crash, logRaw, startSection } from "@cloudflare/cli";
 import { blue, dim } from "@cloudflare/cli/colors";
 import {
@@ -82,6 +83,20 @@ export const runCli = async (args: Partial<C3Args>) => {
 			validateProjectDirectory(String(value) || C3_DEFAULTS.projectName, args),
 		format: (val) => `./${val}`,
 	});
+
+	const path = resolve(projectName);
+	if (existsSync(path)) {
+		const overwrite = await processArgument(args, "overwrite", {
+			type: "confirm",
+			question:
+				"Target directory is not empty. Remove existing files and continue?",
+			label: "overwrite",
+		});
+
+		if (!overwrite) {
+			crash(`Aborted`);
+		}
+	}
 
 	// If not specified, attempt to infer the `type` argument from other flags
 	if (!args.type) {

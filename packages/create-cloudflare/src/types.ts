@@ -9,6 +9,7 @@ export type C3Args = {
 	open?: boolean;
 	git?: boolean;
 	autoUpdate?: boolean;
+	overwrite?: boolean;
 	// pages specific
 	framework?: string;
 	// workers specific
