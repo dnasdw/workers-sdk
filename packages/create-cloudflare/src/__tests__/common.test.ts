@@ -1,6 +1,7 @@
 import * as command from "helpers/command";
 import { describe, expect, test, vi } from "vitest";
 import { isGitConfigured } from "../common";
+import { validateProjectDirectory } from "../common";
 
 function promisify<T>(value: T) {
 	return new Promise<T>((res) => res(value));
@@ -37,5 +38,36 @@ describe("isGitConfigured", () => {
 			throw new Error("git not found");
 		});
 		expect(await isGitConfigured()).toBe(false);
+	});
+});
+
+describe("validateProjectDirectory", () => {
+	let args = {};
+
+	test("allow valid project names", async () => {
+		expect(validateProjectDirectory("foo", args)).toBeUndefined();
+		expect(validateProjectDirectory("foo/bar/baz", args)).toBeUndefined();
+		expect(validateProjectDirectory("./foobar", args)).toBeUndefined();
+		expect(validateProjectDirectory("f".repeat(58), args)).toBeUndefined();
+	});
+
+	test("disallow invalid project names", async () => {
+		// Invalid pages project names should return an error
+		expect(validateProjectDirectory("foobar-", args)).not.toBeUndefined();
+		expect(validateProjectDirectory("-foobar-", args)).not.toBeUndefined();
+		expect(validateProjectDirectory("fo*o{ba)r", args)).not.toBeUndefined();
+		expect(validateProjectDirectory("f".repeat(59), args)).not.toBeUndefined();
+	});
+
+	test("disallow existing, non-empty directories", async () => {
+		// Existing, non-empty directories should return an error
+		expect(validateProjectDirectory(".", args)).not.toBeUndefined();
+	});
+
+	test("Relax validation when --existing-script is passed", async () => {
+		args = { existingScript: "FooBar" };
+		expect(validateProjectDirectory("foobar-", args)).toBeUndefined();
+		expect(validateProjectDirectory("FooBar", args)).toBeUndefined();
+		expect(validateProjectDirectory("f".repeat(59), args)).toBeUndefined();
 	});
 });

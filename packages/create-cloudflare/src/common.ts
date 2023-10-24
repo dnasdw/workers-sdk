@@ -1,21 +1,21 @@
 import { existsSync, mkdirSync, readdirSync } from "fs";
-import { basename, dirname, resolve } from "path";
+import { basename, dirname, relative, resolve } from "path";
 import { chdir } from "process";
-import { getFrameworkCli } from "frameworks/index";
-import { processArgument } from "helpers/args";
 import {
-	C3_DEFAULTS,
 	crash,
 	endSection,
 	log,
 	logRaw,
 	newline,
-	openInBrowser,
 	shapes,
 	startSection,
 	updateStatus,
-} from "helpers/cli";
-import { dim, blue, gray, bgGreen, brandColor } from "helpers/colors";
+} from "@cloudflare/cli";
+import { brandColor, dim, gray, bgGreen, blue } from "@cloudflare/cli/colors";
+import { inputPrompt, spinner } from "@cloudflare/cli/interactive";
+import { getFrameworkCli } from "frameworks/index";
+import { processArgument } from "helpers/args";
+import { C3_DEFAULTS, openInBrowser } from "helpers/cli";
 import {
 	listAccounts,
 	printAsyncStatus,
@@ -23,7 +23,6 @@ import {
 	runCommands,
 	wranglerLogin,
 } from "helpers/command";
-import { inputPrompt, spinner } from "helpers/interactive";
 import { detectPackageManager } from "helpers/packages";
 import { poll } from "helpers/poll";
 import { version as wranglerVersion } from "wrangler/package.json";
@@ -33,7 +32,11 @@ import type { C3Args, PagesGeneratorContext } from "types";
 
 const { name, npm } = detectPackageManager();
 
-export const validateProjectDirectory = (relativePath: string) => {
+export const validateProjectDirectory = (
+	relativePath: string,
+	args: Partial<C3Args>
+) => {
+	// Validate that the directory is non-existent or empty
 	const path = resolve(relativePath);
 	const existsAlready = existsSync(path);
 	const isEmpty = existsAlready && readdirSync(path).length === 0; // allow existing dirs _if empty_ to ensure c3 is non-destructive
@@ -41,12 +44,33 @@ export const validateProjectDirectory = (relativePath: string) => {
 	if (existsAlready && !isEmpty) {
 		return `Directory \`${relativePath}\` already exists and is not empty. Please choose a new name.`;
 	}
+
+	// Ensure the name is valid per the pages schema
+	// Skip this if we're initializing from an existing workers script, since some
+	// previously created workers may have names containing capital letters
+	if (!args.existingScript) {
+		const projectName = basename(path);
+		const invalidChars = /[^a-z0-9-]/;
+		const invalidStartEnd = /^-|-$/;
+
+		if (projectName.match(invalidStartEnd)) {
+			return `Project names cannot start or end with a dash.`;
+		}
+
+		if (projectName.match(invalidChars)) {
+			return `Project names must only contain lowercase characters, numbers, and dashes.`;
+		}
+
+		if (projectName.length > 58) {
+			return `Project names must be less than 58 characters.`;
+		}
+	}
 };
 
 export const setupProjectDirectory = (args: C3Args) => {
 	// Crash if the directory already exists
 	const path = resolve(args.projectName);
-	const err = validateProjectDirectory(path);
+	const err = validateProjectDirectory(path, args);
 	if (err) {
 		crash(err);
 	}
@@ -180,7 +204,10 @@ export const chooseAccount = async (ctx: PagesGeneratorContext) => {
 
 export const printSummary = async (ctx: PagesGeneratorContext) => {
 	const nextSteps = [
-		[`Navigate to the new directory`, `cd ${ctx.project.name}`],
+		[
+			`Navigate to the new directory`,
+			`cd ${shellquote.quote([relative(ctx.originalCWD, ctx.project.path)])}`,
+		],
 		[
 			`Run the development server`,
 			`${npm} run ${ctx.framework?.config.devCommand ?? "start"}`,

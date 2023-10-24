@@ -1,5 +1,67 @@
 # wrangler
 
+## 3.14.0
+
+### Minor Changes
+
+- [#4204](https://github.com/cloudflare/workers-sdk/pull/4204) [`38fdbe9b`](https://github.com/cloudflare/workers-sdk/commit/38fdbe9b75af6a588fe4bc8387be45610149c2f3) Thanks [@matthewdavidrodgers](https://github.com/matthewdavidrodgers)! - Support user limits for CPU time
+
+  User limits provided via script metadata on upload
+
+  Example configuration:
+
+  ```
+  [limits]
+  cpu_ms = 20000
+  ```
+
+* [#2162](https://github.com/cloudflare/workers-sdk/pull/2162) [`a1f212e6`](https://github.com/cloudflare/workers-sdk/commit/a1f212e6423fd251612b1b3c2ac9f254daa8fa4c) Thanks [@WalshyDev](https://github.com/WalshyDev)! - add support for service bindings in `wrangler pages dev` by providing the
+  new `--service`|`-s` flag which accepts an array of `BINDING_NAME=SCRIPT_NAME`
+  where `BINDING_NAME` is the name of the binding and `SCRIPT_NAME` is the name
+  of the worker (as defined in its `wrangler.toml`), such workers need to be
+  running locally with with `wrangler dev`.
+
+  For example if a user has a worker named `worker-a`, in order to locally bind
+  to that they'll need to open two different terminals, in each navigate to the
+  respective worker/pages application and then run respectively `wrangler dev` and
+  `wrangler pages ./publicDir --service MY_SERVICE=worker-a` this will add the
+  `MY_SERVICE` binding to pages' worker `env` object.
+
+  Note: additionally after the `SCRIPT_NAME` the name of an environment can be specified,
+  prefixed by an `@` (as in: `MY_SERVICE=SCRIPT_NAME@PRODUCTION`), this behavior is however
+  experimental and not fully properly defined.
+
+## 3.13.2
+
+### Patch Changes
+
+- [#4206](https://github.com/cloudflare/workers-sdk/pull/4206) [`8e927170`](https://github.com/cloudflare/workers-sdk/commit/8e927170c4b6ce4310e563ce528c2ea20d3de9e7) Thanks [@1000hz](https://github.com/1000hz)! - chore: bump `miniflare` to [`3.20231016.0`](https://github.com/cloudflare/miniflare/releases/tag/v3.20231016.0)
+
+* [#4144](https://github.com/cloudflare/workers-sdk/pull/4144) [`54800f6f`](https://github.com/cloudflare/workers-sdk/commit/54800f6f2dc52b921e7dd1d9a57bb437e2094bb0) Thanks [@a-robinson](https://github.com/a-robinson)! - Log a warning when using a Hyperdrive binding in local wrangler dev
+
+## 3.13.1
+
+### Patch Changes
+
+- [#4171](https://github.com/cloudflare/workers-sdk/pull/4171) [`88f15f61`](https://github.com/cloudflare/workers-sdk/commit/88f15f61cad2a69c07e26203cc84ddb2da42deb3) Thanks [@penalosa](https://github.com/penalosa)! - patch: This release fixes some regressions related to running `wrangler dev` that were caused by internal refactoring of the dev server architecture ([#3960](https://github.com/cloudflare/workers-sdk/pull/3960)). The change has been reverted, and will be added back in a future release.
+
+## 3.13.0
+
+### Minor Changes
+
+- [#4161](https://github.com/cloudflare/workers-sdk/pull/4161) [`403bc25c`](https://github.com/cloudflare/workers-sdk/commit/403bc25c4fa56a3ddf8a6af166d99919f565c497) Thanks [@RamIdeas](https://github.com/RamIdeas)! - Fix wrangler generated types to match runtime exports
+
+* [#3960](https://github.com/cloudflare/workers-sdk/pull/3960) [`c36b78b4`](https://github.com/cloudflare/workers-sdk/commit/c36b78b4109c05f47556972e66673f64ec0baa3b) Thanks [@RamIdeas](https://github.com/RamIdeas)! - Refactoring the internals of wrangler dev servers (including `wrangler dev`, `wrangler dev --remote` and `unstable_dev()`).
+
+  There are no changes required for developers to opt-in. Improvements include:
+
+  - fewer 'address in use' errors upon reloads
+  - upon config/source file changes, requests are buffered to guarantee the response is from the new version of the Worker
+
+### Patch Changes
+
+- [#3590](https://github.com/cloudflare/workers-sdk/pull/3590) [`f4ad634a`](https://github.com/cloudflare/workers-sdk/commit/f4ad634af86c49ade427af23e3853c656e30250a) Thanks [@penalosa](https://github.com/penalosa)! - fix: When a middleware is configured which doesn't support your Worker's script format, fail early with a helpful error message
+
 ## 3.12.0
 
 ### Minor Changes

@@ -5072,6 +5072,29 @@ addEventListener('fetch', event => {});`
 		});
 	});
 
+	describe("user limits", () => {
+		it("should allow specifying a cpu millisecond limit", async () => {
+			writeWranglerToml({
+				limits: { cpu_ms: 15_000 },
+			});
+
+			await fs.promises.writeFile("index.js", `export default {};`);
+			mockSubDomainRequest();
+			mockUploadWorkerRequest({
+				expectedLimits: { cpu_ms: 15_000 },
+			});
+
+			await runWrangler("publish index.js");
+			expect(std.out).toMatchInlineSnapshot(`
+			"Total Upload: xx KiB / gzip: xx KiB
+			Uploaded test-name (TIMINGS)
+			Published test-name (TIMINGS)
+			  https://test-name.test-sub-domain.workers.dev
+			Current Deployment ID: Galaxy-Class"
+		`);
+		});
+	});
+
 	describe("bindings", () => {
 		it("should allow bindings with different names", async () => {
 			writeWranglerToml({
@@ -7988,7 +8011,7 @@ export default{
 			  "err": "",
 			  "info": "",
 			  "out": "Total Upload: xx KiB / gzip: xx KiB",
-			  "warn": "[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mWe recommend keeping your script less than 1MiB (1024 KiB) after gzip. Exceeding past this can affect cold start time[0m
+			  "warn": "[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mWe recommend keeping your script less than 1MiB (1024 KiB) after gzip. Exceeding this can affect cold start time. Consider using Wrangler's \`--minify\` option to reduce your bundle size.[0m
 
 			",
 			}
@@ -8623,7 +8646,7 @@ function mockLastDeploymentRequest() {
 }
 
 /** Create a mock handler for the request to upload a worker script. */
-function mockUploadWorkerRequest(
+export function mockUploadWorkerRequest(
 	options: {
 		available_on_subdomain?: boolean;
 		expectedEntry?: string | RegExp;
@@ -8637,6 +8660,7 @@ function mockUploadWorkerRequest(
 		expectedTailConsumers?: CfWorkerInit["tail_consumers"];
 		expectedUnsafeMetaData?: Record<string, string>;
 		expectedCapnpSchema?: string;
+		expectedLimits?: CfWorkerInit["limits"];
 		env?: string;
 		legacyEnv?: boolean;
 		keepVars?: boolean;
@@ -8658,6 +8682,7 @@ function mockUploadWorkerRequest(
 		expectedTailConsumers,
 		expectedUnsafeMetaData,
 		expectedCapnpSchema,
+		expectedLimits,
 		keepVars,
 	} = options;
 	if (env && !legacyEnv) {
@@ -8734,6 +8759,9 @@ function mockUploadWorkerRequest(
 				expectedCapnpSchema
 			);
 		}
+		if ("expectedLimits" in options) {
+			expect(metadata.limits).toEqual(expectedLimits);
+		}
 		if (expectedUnsafeMetaData !== undefined) {
 			Object.keys(expectedUnsafeMetaData).forEach((key) => {
 				expect(metadata[key]).toEqual(expectedUnsafeMetaData[key]);
@@ -8760,7 +8788,7 @@ function mockUploadWorkerRequest(
 }
 
 /** Create a mock handler for the request to get the account's subdomain. */
-function mockSubDomainRequest(
+export function mockSubDomainRequest(
 	subdomain = "test-sub-domain",
 	registeredWorkersDev = true
 ) {

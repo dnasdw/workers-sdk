@@ -1,5 +1,49 @@
 # create-cloudflare
 
+## 2.6.1
+
+### Patch Changes
+
+- [#4213](https://github.com/cloudflare/workers-sdk/pull/4213) [`039acfd4`](https://github.com/cloudflare/workers-sdk/commit/039acfd4a35ce04105c26e8767320e7235921ff3) Thanks [@dependabot](https://github.com/apps/dependabot)! - C3: Bumped `create-solid` from `0.3.6` to `0.3.7`
+
+* [#4217](https://github.com/cloudflare/workers-sdk/pull/4217) [`b9687231`](https://github.com/cloudflare/workers-sdk/commit/b96872319bf59615f63276a60ec352113cb85455) Thanks [@dependabot](https://github.com/apps/dependabot)! - C3: Bumped `create-astro` from `4.2.1` to `4.3.0`
+
+- [#4190](https://github.com/cloudflare/workers-sdk/pull/4190) [`c2457cb4`](https://github.com/cloudflare/workers-sdk/commit/c2457cb484f9e09752403116f137ab1bc40ae322) Thanks [@dario-piotrowicz](https://github.com/dario-piotrowicz)! - Set the proper compatibility date for web applications (instead of using the current date)
+
+* [#4216](https://github.com/cloudflare/workers-sdk/pull/4216) [`17c59f29`](https://github.com/cloudflare/workers-sdk/commit/17c59f2905d774418a496b290f024eb52e7031de) Thanks [@dario-piotrowicz](https://github.com/dario-piotrowicz)! - amend summary showing incorrect cd instruction for projects in nested paths
+
+- [#4220](https://github.com/cloudflare/workers-sdk/pull/4220) [`2b4d9def`](https://github.com/cloudflare/workers-sdk/commit/2b4d9def1bd33f38b5c03a8c99c8f7a1879082da) Thanks [@dario-piotrowicz](https://github.com/dario-piotrowicz)! - don't retry the project creation multiple times when it fails because the project's name is already used
+
+## 2.6.0
+
+### Minor Changes
+
+- [#4116](https://github.com/cloudflare/workers-sdk/pull/4116) [`5ff0ca02`](https://github.com/cloudflare/workers-sdk/commit/5ff0ca021de83add9f9e90ab71758f46311ebd65) Thanks [@jculvey](https://github.com/jculvey)! - Replaces the "prestart" and "predeploy" scripts when using Angular to better support pnpm
+
+### Patch Changes
+
+- [#4099](https://github.com/cloudflare/workers-sdk/pull/4099) [`4deda525`](https://github.com/cloudflare/workers-sdk/commit/4deda525ebd4a9fa65a4a1e827cfcd2fc2add592) Thanks [@dependabot](https://github.com/apps/dependabot)! - C3: Bumped `gatsby` from `5.12.4` to `5.12.5`
+
+* [#4141](https://github.com/cloudflare/workers-sdk/pull/4141) [`9b2578aa`](https://github.com/cloudflare/workers-sdk/commit/9b2578aacb50c2be30852881cd4eb740d0b436c3) Thanks [@dependabot](https://github.com/apps/dependabot)! - C3: Bumped `create-svelte` from `5.1.0` to `5.1.1`
+
+- [#4184](https://github.com/cloudflare/workers-sdk/pull/4184) [`616b6610`](https://github.com/cloudflare/workers-sdk/commit/616b6610ed25689c093c466b28516a9802a301dd) Thanks [@dependabot](https://github.com/apps/dependabot)! - C3: Bumped `create-hono` from `0.2.6` to `0.3.1`
+
+* [#4191](https://github.com/cloudflare/workers-sdk/pull/4191) [`4b70c88c`](https://github.com/cloudflare/workers-sdk/commit/4b70c88cf59108ad98eeb021890485a88ddb10f8) Thanks [@dependabot](https://github.com/apps/dependabot)! - C3: Bumped `create-remix` from `2.0.1` to `2.1.0`
+
+- [#4197](https://github.com/cloudflare/workers-sdk/pull/4197) [`9095c6ac`](https://github.com/cloudflare/workers-sdk/commit/9095c6acdaab61899286e3b136efd5b21dcc2723) Thanks [@dependabot](https://github.com/apps/dependabot)! - C3: Bumped `gatsby` from `5.12.5` to `5.12.7`
+
+* [#4177](https://github.com/cloudflare/workers-sdk/pull/4177) [`2162501a`](https://github.com/cloudflare/workers-sdk/commit/2162501a0aac1ae5800c8e022568fc357a8c7ff6) Thanks [@jculvey](https://github.com/jculvey)! - Relax name validation for projects created with `--existing-script` flag
+
+## 2.5.0
+
+### Minor Changes
+
+- [#4136](https://github.com/cloudflare/workers-sdk/pull/4136) [`0f043a12`](https://github.com/cloudflare/workers-sdk/commit/0f043a126e5499bc1fcfd09782369264e4246317) Thanks [@jculvey](https://github.com/jculvey)! - Fixes an issue that was causing the auto-update check not to run
+
+### Patch Changes
+
+- [#4128](https://github.com/cloudflare/workers-sdk/pull/4128) [`696d7f29`](https://github.com/cloudflare/workers-sdk/commit/696d7f29c6c8cb516164de8da35400ac7bca0694) Thanks [@jculvey](https://github.com/jculvey)! - Verify that project names are valid for pages projects
+
 ## 2.4.1
 
 ### Patch Changes

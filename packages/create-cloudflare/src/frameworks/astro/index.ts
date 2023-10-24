@@ -1,10 +1,10 @@
-import { logRaw } from "helpers/cli";
-import { brandColor, dim } from "helpers/colors";
+import { logRaw } from "@cloudflare/cli";
+import { brandColor, dim } from "@cloudflare/cli/colors";
 import { npmInstall, runCommand, runFrameworkGenerator } from "helpers/command";
 import { compatDateFlag } from "helpers/files";
 import { detectPackageManager } from "helpers/packages";
 import { getFrameworkCli } from "../index";
-import type { PagesGeneratorContext, FrameworkConfig } from "types";
+import type { FrameworkConfig, PagesGeneratorContext } from "types";
 
 const { npx, dlx } = detectPackageManager();
 
@@ -39,10 +39,10 @@ const config: FrameworkConfig = {
 	generate,
 	configure,
 	displayName: "Astro",
-	packageScripts: {
-		"pages:dev": `wrangler pages dev ${compatDateFlag()} -- astro dev`,
+	getPackageScripts: async () => ({
+		"pages:dev": `wrangler pages dev ${await compatDateFlag()} -- astro dev`,
 		"pages:deploy": `astro build && wrangler pages deploy ./dist`,
-	},
+	}),
 	testFlags: [
 		"--skip-houston",
 		"--no-install",

@@ -1,9 +1,9 @@
-import { logRaw } from "helpers/cli";
+import { logRaw } from "@cloudflare/cli";
 import { resetPackageManager, runFrameworkGenerator } from "helpers/command";
 import { compatDateFlag } from "helpers/files";
 import { detectPackageManager } from "helpers/packages";
 import { getFrameworkCli } from "../index";
-import type { PagesGeneratorContext, FrameworkConfig } from "types";
+import type { FrameworkConfig, PagesGeneratorContext } from "types";
 
 const { npm, dlx } = detectPackageManager();
 
@@ -23,9 +23,9 @@ const config: FrameworkConfig = {
 	generate,
 	configure,
 	displayName: "React",
-	packageScripts: {
-		"pages:dev": `wrangler pages dev ${compatDateFlag()} --port 3000 -- ${npm} start`,
+	getPackageScripts: async () => ({
+		"pages:dev": `wrangler pages dev ${await compatDateFlag()} --port 3000 -- ${npm} start`,
 		"pages:deploy": `${npm} run build && wrangler pages deploy ./build`,
-	},
+	}),
 };
 export default config;

@@ -1,13 +1,19 @@
 #!/usr/bin/env node
+import { crash, logRaw, startSection } from "@cloudflare/cli";
+import { blue, dim } from "@cloudflare/cli/colors";
+import {
+	isInteractive,
+	spinner,
+	spinnerFrames,
+} from "@cloudflare/cli/interactive";
 import { parseArgs, processArgument } from "helpers/args";
-import { C3_DEFAULTS, crash, logRaw, startSection } from "helpers/cli";
-import { blue, dim } from "helpers/colors";
+import { C3_DEFAULTS } from "helpers/cli";
 import { runCommand } from "helpers/command";
-import { isInteractive, spinnerFrames, spinner } from "helpers/interactive";
 import { detectPackageManager } from "helpers/packages";
 import semver from "semver";
 import { version } from "../package.json";
 import { validateProjectDirectory } from "./common";
+import * as shellquote from "./helpers/shell-quote";
 import { templateMap } from "./templateMap";
 import type { C3Args } from "types";
 
@@ -51,7 +57,15 @@ const isUpdateAvailable = async () => {
 // Spawn a separate process running the most recent version of c3
 export const runLatest = async () => {
 	const args = process.argv.slice(2);
-	await runCommand(`${npm} create cloudflare@latest ${args.join(" ")}`);
+
+	// the parsing logic of `npm create` requires `--` to be supplied
+	// before any flags intended for the target command.
+	const argString =
+		npm === "npm"
+			? `-- ${shellquote.quote(args)}`
+			: `${shellquote.quote(args)}`;
+
+	await runCommand(`${npm} create cloudflare@latest ${argString}`);
 };
 
 // Entrypoint to c3
@@ -65,7 +79,7 @@ export const runCli = async (args: Partial<C3Args>) => {
 		defaultValue: C3_DEFAULTS.projectName,
 		label: "dir",
 		validate: (value) =>
-			validateProjectDirectory(String(value) || C3_DEFAULTS.projectName),
+			validateProjectDirectory(String(value) || C3_DEFAULTS.projectName, args),
 		format: (val) => `./${val}`,
 	});
 

@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 import { resolve } from "path";
 import { chdir } from "process";
+import { crash, endSection, startSection } from "@cloudflare/cli";
+import { brandColor, dim } from "@cloudflare/cli/colors";
+import { spinner } from "@cloudflare/cli/interactive";
 import { FrameworkMap, supportedFramework } from "frameworks/index";
 import { processArgument } from "helpers/args";
-import { C3_DEFAULTS, crash, endSection, startSection } from "helpers/cli";
-import { dim, brandColor } from "helpers/colors";
+import { C3_DEFAULTS } from "helpers/cli";
 import { installWrangler, retry, runCommand } from "helpers/command";
 import { readJSON, writeFile } from "helpers/files";
-import { spinner } from "helpers/interactive";
 import { debug } from "helpers/logging";
 import { detectPackageManager } from "helpers/packages";
 import {
@@ -19,6 +20,7 @@ import {
 	runDeploy,
 	setupProjectDirectory,
 } from "./common";
+import * as shellquote from "./helpers/shell-quote";
 import type { C3Args, PagesGeneratorContext } from "types";
 
 /** How many times to retry the create project command before failing. */
@@ -35,6 +37,7 @@ const defaultFrameworkConfig = {
 };
 
 export const runPagesGenerator = async (args: C3Args) => {
+	const originalCWD = process.cwd();
 	const { name, path } = setupProjectDirectory(args);
 	const framework = await getFrameworkSelection(args);
 
@@ -54,6 +57,7 @@ export const runPagesGenerator = async (args: C3Args) => {
 		},
 		args,
 		type: frameworkConfig.type,
+		originalCWD,
 	};
 
 	// Generate
@@ -111,7 +115,8 @@ const updatePackageScripts = async (ctx: PagesGeneratorContext) => {
 	// Install wrangler so that the dev/deploy commands work
 	await installWrangler();
 
-	const { packageScripts } = ctx.framework?.config ?? {};
+	const { getPackageScripts } = ctx.framework?.config ?? {};
+	const packageScripts = getPackageScripts ? await getPackageScripts() : {};
 	if (packageScripts) {
 		const s = spinner();
 
@@ -159,7 +164,9 @@ const createProject = async (ctx: PagesGeneratorContext) => {
 	const CLOUDFLARE_ACCOUNT_ID = ctx.account.id;
 
 	try {
-		const compatFlags = ctx.framework?.config.compatibilityFlags?.join(" ");
+		const compatFlags = shellquote.quote(
+			ctx.framework?.config.compatibilityFlags ?? []
+		);
 		const compatFlagsArg = compatFlags
 			? `--compatibility-flags ${compatFlags}`
 			: "";
@@ -167,16 +174,29 @@ const createProject = async (ctx: PagesGeneratorContext) => {
 		const productionBranch = await getProductionBranch(ctx.project.path);
 		const cmd = `${npx} wrangler pages project create ${ctx.project.name} --production-branch ${productionBranch} ${compatFlagsArg}`;
 
-		await retry(CREATE_PROJECT_RETRIES, async () =>
-			runCommand(cmd, {
-				// Make this command more verbose in test mode to aid
-				// troubleshooting API errors
-				silent: process.env.VITEST == undefined,
-				cwd: ctx.project.path,
-				env: { CLOUDFLARE_ACCOUNT_ID },
-				startText: "Creating Pages project",
-				doneText: `${brandColor("created")} ${dim(`via \`${cmd.trim()}\``)}`,
-			})
+		await retry(
+			{
+				times: CREATE_PROJECT_RETRIES,
+				exitCondition: (e) => {
+					return (
+						e instanceof Error &&
+						// if the error is regarding name duplication we can exist as retrying is not going to help
+						e.message.includes(
+							"A project with this name already exists. Choose a different project name."
+						)
+					);
+				},
+			},
+			async () =>
+				runCommand(cmd, {
+					// Make this command more verbose in test mode to aid
+					// troubleshooting API errors
+					silent: process.env.VITEST == undefined,
+					cwd: ctx.project.path,
+					env: { CLOUDFLARE_ACCOUNT_ID },
+					startText: "Creating Pages project",
+					doneText: `${brandColor("created")} ${dim(`via \`${cmd.trim()}\``)}`,
+				})
 		);
 	} catch (error) {
 		crash("Failed to create pages project. See output above.");
@@ -186,7 +206,7 @@ const createProject = async (ctx: PagesGeneratorContext) => {
 	try {
 		const verifyProject = `${npx} wrangler pages deployment list --project-name ${ctx.project.name}`;
 
-		await retry(VERIFY_PROJECT_RETRIES, async () =>
+		await retry({ times: VERIFY_PROJECT_RETRIES }, async () =>
 			runCommand(verifyProject, {
 				silent: process.env.VITEST == undefined,
 				cwd: ctx.project.path,

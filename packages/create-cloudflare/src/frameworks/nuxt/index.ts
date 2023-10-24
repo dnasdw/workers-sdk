@@ -1,10 +1,9 @@
-import { logRaw } from "helpers/cli";
+import { logRaw } from "@cloudflare/cli";
 import { npmInstall, runFrameworkGenerator } from "helpers/command";
-import { compatDateFlag } from "helpers/files";
-import { writeFile } from "helpers/files";
+import { compatDateFlag, writeFile } from "helpers/files";
 import { detectPackageManager } from "helpers/packages";
 import { getFrameworkCli } from "../index";
-import type { PagesGeneratorContext, FrameworkConfig } from "types";
+import type { FrameworkConfig, PagesGeneratorContext } from "types";
 
 const { npm, dlx } = detectPackageManager();
 
@@ -30,10 +29,10 @@ const config: FrameworkConfig = {
 	generate,
 	configure,
 	displayName: "Nuxt",
-	packageScripts: {
+	getPackageScripts: async () => ({
 		build: (cmd) => `NITRO_PRESET=cloudflare-pages ${cmd}`,
-		"pages:dev": `wrangler pages dev ${compatDateFlag()} --proxy 3000 -- ${npm} run dev`,
+		"pages:dev": `wrangler pages dev ${await compatDateFlag()} --proxy 3000 -- ${npm} run dev`,
 		"pages:deploy": `${npm} run build && wrangler pages deploy ./dist`,
-	},
+	}),
 };
 export default config;

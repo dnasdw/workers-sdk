@@ -1,9 +1,9 @@
-import { endSection } from "helpers/cli";
+import { endSection } from "@cloudflare/cli";
 import { npmInstall, runCommand, runFrameworkGenerator } from "helpers/command";
 import { compatDateFlag } from "helpers/files";
 import { detectPackageManager } from "helpers/packages";
 import { getFrameworkCli } from "../index";
-import type { PagesGeneratorContext, FrameworkConfig } from "types";
+import type { FrameworkConfig, PagesGeneratorContext } from "types";
 
 const { npm, npx, dlx } = detectPackageManager();
 
@@ -30,9 +30,9 @@ const config: FrameworkConfig = {
 	generate,
 	configure,
 	displayName: "Qwik",
-	packageScripts: {
-		"pages:dev": `wrangler pages dev ${compatDateFlag()} -- ${npm} run dev`,
+	getPackageScripts: async () => ({
+		"pages:dev": `wrangler pages dev ${await compatDateFlag()} -- ${npm} run dev`,
 		"pages:deploy": `${npm} run build && wrangler pages deploy ./dist`,
-	},
+	}),
 };
 export default config;
