@@ -1,5 +1,55 @@
 # wrangler
 
+## 3.15.0
+
+### Minor Changes
+
+- [#4201](https://github.com/cloudflare/workers-sdk/pull/4201) [`0cac2c46`](https://github.com/cloudflare/workers-sdk/commit/0cac2c4681852709883ea91f5b73c5af1f70088a) Thanks [@penalosa](https://github.com/penalosa)! - Callout `--minify` when script size is too large
+
+* [#4209](https://github.com/cloudflare/workers-sdk/pull/4209) [`24d1c5cf`](https://github.com/cloudflare/workers-sdk/commit/24d1c5cf3b810e780df865a0f76f1c3ae8ed5fbe) Thanks [@mrbbot](https://github.com/mrbbot)! - fix: suppress compatibility date fallback warnings if no `wrangler` update is available
+
+  If a compatibility date greater than the installed version of `workerd` was
+  configured, a warning would be logged. This warning was only actionable if a new
+  version of `wrangler` was available. The intent here was to warn if a user set
+  a new compatibility date, but forgot to update `wrangler` meaning changes
+  enabled by the new date wouldn't take effect. This change hides the warning if
+  no update is available.
+
+  It also changes the default compatibility date for `wrangler dev` sessions
+  without a configured compatibility date to the installed version of `workerd`.
+  This previously defaulted to the current date, which may have been unsupported
+  by the installed runtime.
+
+- [#4135](https://github.com/cloudflare/workers-sdk/pull/4135) [`53218261`](https://github.com/cloudflare/workers-sdk/commit/532182610087dffda04cc2091baeceb96e7fdb26) Thanks [@Cherry](https://github.com/Cherry)! - feat: resolve npm exports for file imports
+
+  Previously, when using wasm (or other static files) from an npm package, you would have to import the file like so:
+
+  ```js
+  import wasm from "../../node_modules/svg2png-wasm/svg2png_wasm_bg.wasm";
+  ```
+
+  This update now allows you to import the file like so, assuming it's exposed and available in the package's `exports` field:
+
+  ```js
+  import wasm from "svg2png-wasm/svg2png_wasm_bg.wasm";
+  ```
+
+  This will look at the package's `exports` field in `package.json` and resolve the file using [`resolve.exports`](https://www.npmjs.com/package/resolve.exports).
+
+### Patch Changes
+
+- [#4215](https://github.com/cloudflare/workers-sdk/pull/4215) [`950bc401`](https://github.com/cloudflare/workers-sdk/commit/950bc4015fa408bfcd4fbf771cf1c3a062783d96) Thanks [@RamIdeas](https://github.com/RamIdeas)! - fix various logging of shell commands to correctly quote args when needed
+
+* [#4189](https://github.com/cloudflare/workers-sdk/pull/4189) [`05798038`](https://github.com/cloudflare/workers-sdk/commit/05798038c85a83afb2c0e8ea9533c31a6fbe3e91) Thanks [@gabivlj](https://github.com/gabivlj)! - Move helper cli files of C3 into @cloudflare/cli and make Wrangler and C3 depend on it
+
+- [#4235](https://github.com/cloudflare/workers-sdk/pull/4235) [`46cd2df5`](https://github.com/cloudflare/workers-sdk/commit/46cd2df5745ef90f4d9577504f203d2753ca56e9) Thanks [@mrbbot](https://github.com/mrbbot)! - fix: ensure `console.log()`s during startup are displayed
+
+  Previously, `console.log()` calls before the Workers runtime was ready to
+  receive requests wouldn't be shown. This meant any logs in the global scope
+  likely weren't visible. This change ensures startup logs are shown. In particular,
+  this should [fix Remix's HMR](https://github.com/remix-run/remix/issues/7616),
+  which relies on startup logs to know when the Worker is ready.
+
 ## 3.14.0
 
 ### Minor Changes
